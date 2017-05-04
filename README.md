@@ -138,7 +138,7 @@ multiCache.wrap(key2, (cb) => {
 
 ### Use Clustering (eg Amazon elasticache)
 
-```
+```javascript
 var cacheManager = require('cache-manager');
 var redisStore = require('cache-manager-ioredis');
 
