@@ -12,6 +12,7 @@
   "scripts": {
     "prepublish": "npm prune",
     "test": "jest --forceExit",
+    "test-cov": "jest --coverage",
     "build": "rollup -c"
   },
   "dependencies": {
