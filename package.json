@@ -1,0 +1,34 @@
+{
+  "name": "cache-manager-ioredis",
+  "author": "Matthijs Dabroek <dabroek@gmail.com>",
+  "description": "IORedis store for node-cache-manager",
+  "version": "1.0.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dabroek/node-cache-manager-ioredis.git"
+  },
+  "scripts": {
+    "prepublish": "npm prune",
+    "test": "jest --forceExit",
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "ioredis": "^2.5.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-jest": "^19.0.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-es2015": "^6.24.1",
+    "cache-manager": "^2.4.0",
+    "jest": "^19.0.2",
+    "rollup": "^0.41.6",
+    "rollup-plugin-babel": "^2.7.1"
+  },
+  "engines": {
+    "node": ">=4.2.0"
+  }
+}
