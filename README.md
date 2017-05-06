@@ -1,4 +1,5 @@
 [![build status](https://travis-ci.org/dabroek/node-cache-manager-ioredis.svg?branch=master)](https://travis-ci.org/dabroek/node-cache-manager-ioredis)
+[![coverage status](https://coveralls.io/repos/github/dabroek/node-cache-manager-ioredis/badge.svg?branch=master)](https://coveralls.io/github/dabroek/node-cache-manager-ioredis?branch=master)
 [![dependencies status](https://david-dm.org/dabroek/node-cache-manager-ioredis/status.svg)](https://david-dm.org/dabroek/node-cache-manager-ioredis)
 [![npm version](https://badge.fury.io/js/cache-manager-ioredis.svg)](https://badge.fury.io/js/cache-manager-ioredis)
 [![GitHub issues](https://img.shields.io/github/issues/dabroek/node-cache-manager-ioredis.svg)](https://github.com/dabroek/node-cache-manager-ioredis/issues)
