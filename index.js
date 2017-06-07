@@ -11,7 +11,13 @@ const redisStore = (...args) => {
 
     redisCache = new Redis.Cluster(nodes, options || {});
   } else {
-    redisCache = new Redis(...args);
+    if (typeof args === 'object' && typeof args.url === 'string') {
+      // connect by URL: redisStore({url: "redis://..."})
+      redisCache = new Redis(args.url);
+    } else {
+      // connect by params: redisStore({host, port, password...})
+      redisCache = new Redis(...args);
+    }
   }
 
   const storeArgs = redisCache.options;
