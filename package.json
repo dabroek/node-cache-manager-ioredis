@@ -16,15 +16,15 @@
     "build": "rollup -c"
   },
   "dependencies": {
-    "ioredis": "^3.0.0"
+    "ioredis": "^4.14.1"
   },
   "devDependencies": {
-    "cache-manager": "^2.4.0",
-    "coveralls": "^2.13.1",
-    "jest": "^20.0.4",
-    "rollup": "^0.41.6"
+    "cache-manager": "^2.11.1",
+    "coveralls": "^3.0.9",
+    "jest": "^25.1.0",
+    "rollup": "^1.31.0"
   },
   "engines": {
-    "node": ">=4.2.0"
+    "node": ">=6.0.0"
   }
 }

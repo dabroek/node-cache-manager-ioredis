@@ -1,5 +1,7 @@
 module.exports = {
-  entry: 'index.js',
-  format: 'cjs',
-  dest: 'dist/index.js',
+  input: 'index.js',
+  output: {
+    format: 'cjs',
+    file: 'dist/index.js'
+  }
 };
