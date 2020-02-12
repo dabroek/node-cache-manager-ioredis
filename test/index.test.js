@@ -131,7 +131,7 @@ describe('set', () => {
     redisCache.set('foo1', undefined, (err) => {
       try {
         expect(err).not.toEqual(null);
-        expect(err.message).toEqual('value cannot be undefined');
+        expect(err.message).toEqual('"undefined" is not a cacheable value');
         done();
       } catch (e) {
         done(e);
@@ -165,7 +165,7 @@ describe('set', () => {
     customRedisCache.set('foobar', 'FooBarString', (err) => {
       try {
         expect(err).not.toEqual(null);
-        expect(err.message).toEqual('value cannot be FooBarString');
+        expect(err.message).toEqual('"FooBarString" is not a cacheable value');
         done();
       } catch (e) {
         done(e);
@@ -198,6 +198,8 @@ describe('get', () => {
   });
 
   it('should reject promise on error', (done) => {
+redisCache.store.getClient().end(true);
+    redisCache.store.getClient().end(true);
     redisCache.get('foo')
       .then(() => done(new Error('Should reject')))
       .catch(() => done())
@@ -334,6 +336,7 @@ describe('keys', () => {
   });
 
   it('should reject promise on error', (done) => {
+    redisCache.store.getClient().end(true);
     redisCache.keys('foo')
       .then(() => done(new Error('Should reject')))
       .catch(() => done())
@@ -371,22 +374,19 @@ describe('keys', () => {
 });
 
 describe('isCacheableValue', () => {
-  it('should return true when the value is not undefined', (done) => {
+  it('should return true when the value is not undefined', () => {
     expect(redisCache.store.isCacheableValue(0)).toBe(true);
     expect(redisCache.store.isCacheableValue(100)).toBe(true);
     expect(redisCache.store.isCacheableValue('')).toBe(true);
     expect(redisCache.store.isCacheableValue('test')).toBe(true);
-    done();
   });
 
-  it('should return false when the value is undefined', (done) => {
+  it('should return false when the value is undefined', () => {
     expect(redisCache.store.isCacheableValue(undefined)).toBe(false);
-    done();
   });
 
-  it('should return false when the value is null', (done) => {
+  it('should return false when the value is null', () => {
     expect(redisCache.store.isCacheableValue(null)).toBe(false);
-    done();
   });
 });
 
