@@ -1,5 +1,5 @@
-import cacheManager from 'cache-manager';
-import redisStore from '../index';
+const cacheManager = require('cache-manager');
+const redisStore = require('../index');
 
 let redisCache;
 let customRedisCache;

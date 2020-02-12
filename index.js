@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+const Redis = require('ioredis');
 
 const redisStore = (...args) => {
   let redisCache = null;
@@ -103,4 +103,4 @@ const methods = {
   create: (...args) => redisStore(...args),
 };
 
-export default methods;
+module.exports = methods;
