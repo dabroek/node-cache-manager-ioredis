@@ -164,6 +164,25 @@ var redisCache = cacheManager.caching({
 });
 ```
 
+### Use an external Redis Instance
+
+```javascript
+var cacheManager = require('cache-manager');
+var redisStore = require('cache-manager-ioredis');
+var Redis = require('ioredis');
+
+var redisInstance = new Redis({
+  host: 'localhost',
+  port: 6379,
+  db: 0,
+});
+
+var redisCache = cacheManager.caching({
+  store: redisStore,
+  redisInstance: redisInstance
+});
+```
+
 Contribution
 ------------
 
