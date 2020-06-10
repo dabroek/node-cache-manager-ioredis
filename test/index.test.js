@@ -9,7 +9,7 @@ const config = {
   port: 6379,
   password: null,
   db: 0,
-  ttl: 5,
+  ttl: 5
 };
 
 beforeEach((done) => {
@@ -19,7 +19,7 @@ beforeEach((done) => {
     port: config.port,
     password: config.password,
     db: config.db,
-    ttl: config.ttl,
+    ttl: config.ttl
   });
 
   customRedisCache = cacheManager.caching({
@@ -30,9 +30,11 @@ beforeEach((done) => {
     db: config.db,
     ttl: config.ttl,
     isCacheableValue: (val) => {
-      if (val === undefined) { // allow undefined
+      if (val === undefined) {
+        // allow undefined
         return true;
-      } else if (val === 'FooBarString') { // disallow FooBarString
+      } else if (val === 'FooBarString') {
+        // disallow FooBarString
         return false;
       }
       return redisCache.store.isCacheableValue(val);
@@ -71,15 +73,15 @@ describe('set', () => {
   });
 
   it('should resolve promise on success', (done) => {
-    redisCache.set('foo', 'bar')
-      .then(result => {
-        expect(result).toEqual('OK');
-        done();
-      });
+    redisCache.set('foo', 'bar').then((result) => {
+      expect(result).toEqual('OK');
+      done();
+    });
   });
 
   it('should reject promise on error', (done) => {
-    redisCache.set('foo', null)
+    redisCache
+      .set('foo', null)
       .then(() => done(new Error('Should reject')))
       .catch(() => done());
   });
@@ -123,6 +125,37 @@ describe('set', () => {
     redisCache.get('foo', (err, value) => {
       expect(err).toEqual(null);
       expect(value).toEqual('baz');
+      done();
+    });
+  });
+
+  it('should store a value after resolving an array of promises', async (done) => {
+    await redisCache.set('foo', [
+      new Promise((resolve, reject) => {
+        setTimeout(resolve, 100, 'foo');
+      }),
+      new Promise((resolve, reject) => {
+        setTimeout(resolve, 100, 'baz');
+      })
+    ]);
+    redisCache.get('foo', (err, value) => {
+      expect(err).toEqual(null);
+      expect(value).toEqual(['foo', 'baz']);
+      done();
+    });
+  });
+
+  it('should store a value after resolving a mixed array of data types', async (done) => {
+    await redisCache.set('foo', [
+      new Promise((resolve, reject) => {
+        setTimeout(resolve, 100, 'foo');
+      }),
+      'a',
+      7
+    ]);
+    redisCache.get('foo', (err, value) => {
+      expect(err).toEqual(null);
+      expect(value).toEqual(['foo', 'a', 7]);
       done();
     });
   });
@@ -189,20 +222,22 @@ describe('get', () => {
   });
 
   it('should resolve promise on success', (done) => {
-    redisCache.set('foo', 'bar')
+    redisCache
+      .set('foo', 'bar')
       .then(() => redisCache.get('foo'))
-      .then(result => {
+      .then((result) => {
         expect(result).toEqual('bar');
         done();
       });
   });
 
   it('should reject promise on error', (done) => {
-redisCache.store.getClient().end(true);
     redisCache.store.getClient().end(true);
-    redisCache.get('foo')
+    redisCache.store.getClient().end(true);
+    redisCache
+      .get('foo')
       .then(() => done(new Error('Should reject')))
-      .catch(() => done())
+      .catch(() => done());
   });
 
   it('should retrieve a value for a given key', (done) => {
@@ -327,9 +362,10 @@ describe('keys', () => {
   });
 
   it('should resolve promise on success', (done) => {
-    redisCache.set('foo', 'bar')
+    redisCache
+      .set('foo', 'bar')
       .then(() => redisCache.keys('f*'))
-      .then(result => {
+      .then((result) => {
         expect(result).toEqual(['foo']);
         done();
       });
@@ -337,9 +373,10 @@ describe('keys', () => {
 
   it('should reject promise on error', (done) => {
     redisCache.store.getClient().end(true);
-    redisCache.keys('foo')
+    redisCache
+      .keys('foo')
       .then(() => done(new Error('Should reject')))
-      .catch(() => done())
+      .catch(() => done());
   });
 
   it('should return an array of keys for the given pattern', (done) => {
@@ -423,7 +460,7 @@ describe('defaults are set by redis itself', () => {
 
   beforeEach(() => {
     redisCache2 = cacheManager.caching({
-      store: redisStore,
+      store: redisStore
     });
   });
 
@@ -457,19 +494,27 @@ describe('wrap function', () => {
     const userId = 123;
 
     // First call to wrap should run the code
-    redisCache.wrap('wrap-user', (cb) => {
-      getUser(userId, cb);
-    }, (err, user) => {
-      expect(user.id).toEqual(userId);
-
-      // Second call to wrap should retrieve from cache
-      redisCache.wrap('wrap-user', (cb) => {
-        getUser(userId + 1, cb);
-      }, (err, user) => {
+    redisCache.wrap(
+      'wrap-user',
+      (cb) => {
+        getUser(userId, cb);
+      },
+      (err, user) => {
         expect(user.id).toEqual(userId);
-        done();
-      });
-    });
+
+        // Second call to wrap should retrieve from cache
+        redisCache.wrap(
+          'wrap-user',
+          (cb) => {
+            getUser(userId + 1, cb);
+          },
+          (err, user) => {
+            expect(user.id).toEqual(userId);
+            done();
+          }
+        );
+      }
+    );
   });
 
   it('should work with promises', () => {
@@ -477,18 +522,13 @@ describe('wrap function', () => {
 
     // First call to wrap should run the code
     return redisCache
-      .wrap(
-        'wrap-promise',
-        () => getUserPromise(userId),
-      )
+      .wrap('wrap-promise', () => getUserPromise(userId))
       .then((user) => {
         expect(user.id).toEqual(userId);
 
         // Second call to wrap should retrieve from cache
-        return redisCache.wrap(
-          'wrap-promise',
-          () => getUserPromise(userId + 1),
-        )
+        return redisCache
+          .wrap('wrap-promise', () => getUserPromise(userId + 1))
           .then((user) => expect(user.id).toEqual(userId));
       });
   });
