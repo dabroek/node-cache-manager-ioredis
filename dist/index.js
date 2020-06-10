@@ -26,7 +26,7 @@ const redisStore = (...args) => {
   self.getClient = () => redisCache;
 
   self.set = (key, value, options, cb) => (
-    new Promise((resolve, reject) => {
+    new Promise(async (resolve, reject) => {
       if (typeof options === 'function') {
         cb = options;
         options = {};
