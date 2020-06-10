@@ -41,6 +41,8 @@ const redisStore = (...args) => {
         return cb(new Error(`"${value}" is not a cacheable value`));
       }
 
+      value = Array.isArray(value) ? await Promise.all(array) : value;
+      
       const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
       const val = JSON.stringify(value) || '"undefined"';
 
