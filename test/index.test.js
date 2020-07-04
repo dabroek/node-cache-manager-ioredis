@@ -1,5 +1,6 @@
 const cacheManager = require('cache-manager');
 const redisStore = require('../index');
+const Redis = require('ioredis');
 
 let redisCache;
 let customRedisCache;
@@ -57,6 +58,28 @@ describe('initialization', () => {
     redisPwdCache.set('pwdfoo', 'pwdbar', (err) => {
       expect(err).toEqual(null);
       redisCache.del('pwdfoo', (errDel) => {
+        expect(errDel).toEqual(null);
+        done();
+      });
+    });
+  });
+
+  it('should create a store with an external redisInstance', (done) => {
+    const externalRedisInstanceCache = cacheManager.caching({
+      store: redisStore,
+      redisInstance: new Redis({
+        host: config.host,
+        port: config.port,
+        password: config.password,
+        db: config.db,
+      }),
+      ttl: config.ttl
+    });
+
+    expect(externalRedisInstanceCache.store.getClient().options.password).toEqual(config.password);
+    externalRedisInstanceCache.set('extfoo', 'extbar', (err) => {
+      expect(err).toEqual(null);
+      redisCache.del('extfoo', (errDel) => {
         expect(errDel).toEqual(null);
         done();
       });
