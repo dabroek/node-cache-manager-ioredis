@@ -5,7 +5,9 @@ const Redis = require('ioredis');
 const redisStore = (...args) => {
   let redisCache = null;
 
-  if (args.length > 0 && args[0].clusterConfig) {
+  if (args.length > 0 && args[0].redisInstance) {
+    redisCache = args[0].redisInstance;
+  } else if (args.length > 0 && args[0].clusterConfig) {
     const {
       nodes,
       options
