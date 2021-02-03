@@ -18,7 +18,11 @@ const redisStore = (...args) => {
     redisCache = new Redis(...args);
   }
 
-  const storeArgs = redisCache.options;
+  const storeArgs = {
+    ...redisCache.options,
+    ttl: args.length > 0 ? args[0].ttl : undefined
+  };
+
 
   let self = {
     name: 'redis',
