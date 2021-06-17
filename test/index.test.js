@@ -341,6 +341,49 @@ describe('ttl', () => {
       done();
     });
   });
+
+  it('should retrieve a ttl when an external instance is used', (done) => {
+    const externalRedisInstanceCache = cacheManager.caching({
+      store: redisStore,
+      redisInstance: new Redis({
+        host: config.host,
+        port: config.port,
+        password: config.password,
+        db: config.db,
+      }),
+      ttl: config.ttl
+    });
+
+    externalRedisInstanceCache.set('foo', 'bar', () => {
+      redisCache.ttl('foo', (err, ttl) => {
+        expect(err).toEqual(null);
+        expect(ttl).toEqual(config.ttl);
+        done();
+      });
+    })
+  });
+
+  it('should use the Redis ttl if both a global and Redis ttl are specified', (done) => {
+    const externalRedisInstanceCache = cacheManager.caching({
+      store: redisStore,
+      redisInstance: new Redis({
+        host: config.host,
+        port: config.port,
+        password: config.password,
+        db: config.db,
+        ttl: config.ttl * 99
+      }),
+      ttl: config.ttl
+    });
+
+    externalRedisInstanceCache.set('foo', 'bar', () => {
+      redisCache.ttl('foo', (err, ttl) => {
+        expect(err).toEqual(null);
+        expect(ttl).toEqual(config.ttl * 99);
+        done();
+      });
+    })
+  });
 });
 
 describe('keys', () => {

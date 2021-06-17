@@ -18,6 +18,14 @@ const redisStore = (...args) => {
 
   const storeArgs = redisCache.options;
 
+  if (
+    storeArgs.ttl === undefined &&
+    args.length > 0 &&
+    typeof args[0].ttl === 'number'
+  ) {
+    storeArgs.ttl = args[0].ttl;
+  }
+
   let self = {
     name: 'redis',
     isCacheableValue: storeArgs.isCacheableValue || (value => value !== undefined && value !== null),
