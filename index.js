@@ -1,5 +1,7 @@
 const Redis = require('ioredis');
 
+const isObject = (value) => value instanceof Object && value.constructor === Object;
+
 const redisStore = (...args) => {
   let redisCache = null;
 
@@ -66,19 +68,31 @@ const redisStore = (...args) => {
     })
   );
 
-  self.mget = (keys, options, cb) => (
-    new Promise((resolve, reject) => {
-      if (typeof options === 'function') {
-        cb = options;
-      }
+  self.mget = function () {
+    var args = Array.prototype.slice.apply(arguments);
+    var cb;
+    var options = {};
 
+    if (typeof args[args.length - 1] === 'function') {
+      cb = args.pop();
+    }
+
+    if (isObject(args[args.length - 1])) {
+      options = args.pop();
+    }
+
+    if (Array.isArray(args[0])) {
+      args = args[0];
+    }
+
+    return new Promise((resolve, reject) => {
       if (!cb) {
         cb = (err, result) => (err ? reject(err) : resolve(result));
       }
 
-      redisCache.mget(keys, handleResponse(cb, { parse: true }));
-    })
-  );
+      redisCache.mget(args, handleResponse(cb, { parse: true }));
+    });
+  }
 
   self.del = (key, options, cb) => (
     new Promise((resolve, reject) => {
