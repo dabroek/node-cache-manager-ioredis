@@ -80,13 +80,19 @@ const redisStore = (...args) => {
     })
   );
 
-  self.del = (key, options, cb) => {
-    if (typeof options === 'function') {
-      cb = options;
-    }
+  self.del = (key, options, cb) => (
+    new Promise((resolve, reject) => {
+      if (typeof options === 'function') {
+        cb = options;
+      }
 
-    redisCache.del(key, handleResponse(cb));
-  };
+      if (!cb) {
+        cb = (err, result) => (err ? reject(err) : resolve(result));
+      }
+
+      redisCache.del(key, handleResponse(cb));
+    })
+  );
 
   self.reset = cb => redisCache.flushdb(handleResponse(cb));
 

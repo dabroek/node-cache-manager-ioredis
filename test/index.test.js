@@ -304,6 +304,28 @@ redisCache.store.getClient().end(true);
 });
 
 describe('del', () => {
+  it('should return a promise', (done) => {
+    expect(redisCache.del('foo')).toBeInstanceOf(Promise);
+    done();
+  });
+
+  it('should resolve promise on success', (done) => {
+    redisCache.set('foo', 'bar')
+      .then(() => redisCache.del('foo'))
+      .then(() => redisCache.get('foo'))
+      .then((result) => {
+        expect(result).toEqual(null);
+        done();
+      });
+  });
+
+  it('should reject promise on error', (done) => {
+    redisCache.store.getClient().end(true);
+    redisCache.del('foo')
+      .then(() => done(new Error('Should reject')))
+      .catch(() => done())
+  });
+
   it('should delete a value for a given key', (done) => {
     redisCache.set('foo', 'bar', () => {
       redisCache.del('foo', (err) => {
