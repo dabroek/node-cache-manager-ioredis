@@ -67,17 +67,37 @@ const redisStore = (...args) => {
       redisCache.get(key, handleResponse(cb, { parse: true }));
     })
   );
-  
-  self.del = (key, options, cb) => {
-    if (typeof options === 'function') {
-      cb = options;
-    }
 
-    redisCache.del(key, handleResponse(cb));
-  };
+  self.mget = (keys, options, cb) => (
+    new Promise((resolve, reject) => {
+      if (typeof options === 'function') {
+        cb = options;
+      }
+
+      if (!cb) {
+        cb = (err, result) => (err ? reject(err) : resolve(result));
+      }
+
+      redisCache.mget(keys, handleResponse(cb, { parse: true }));
+    })
+  );
+
+  self.del = (key, options, cb) => (
+    new Promise((resolve, reject) => {
+      if (typeof options === 'function') {
+        cb = options;
+      }
+
+      if (!cb) {
+        cb = (err, result) => (err ? reject(err) : resolve(result));
+      }
+
+      redisCache.del(key, handleResponse(cb));
+    })
+  );
 
   self.reset = cb => redisCache.flushdb(handleResponse(cb));
-    
+
   self.keys = (pattern, cb) => (
     new Promise((resolve, reject) => {
       if (typeof pattern === 'function') {
@@ -97,7 +117,7 @@ const redisStore = (...args) => {
 
   return self;
 };
-  
+
 function handleResponse(cb, opts = {}) {
   return (err, result) => {
     if (err) {
@@ -105,11 +125,18 @@ function handleResponse(cb, opts = {}) {
     }
 
     if (opts.parse) {
+      const isMultiple = Array.isArray(result);
+      if (!isMultiple) {
+        result = [result];
+      }
+
       try {
-        result = JSON.parse(result);
+        result = result.map((_result) => JSON.parse(_result));
       } catch (e) {
         return cb && cb(e);
       }
+
+      result = isMultiple ? result : result[0];
     }
 
     return cb && cb(null, result);
