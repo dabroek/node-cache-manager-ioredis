@@ -251,6 +251,30 @@ redisCache.store.getClient().end(true);
     });
   });
 
+  it('should retrieve multiple values with options', (done) => {
+    redisCache.set('foo', 'bar', () => {
+      redisCache.set('foo1', 'bar1', () => {
+        redisCache.mget(['foo', 'foo1', 'foo2'], {}, (err, result) => {
+          expect(err).toEqual(null);
+          expect(result).toEqual(['bar', 'bar1', null]);
+          done();
+        })
+          .catch((err) => done(err))
+      });
+    });
+  });
+
+  it('should retrieve multiple values promise', (done) => {
+    redisCache.set('foo', 'bar', () => {
+      redisCache.set('foo1', 'bar1', () => {
+        redisCache.mget(['foo', 'foo1', 'foo2']).then((result) => {
+          expect(result).toEqual(['bar', 'bar1', null]);
+          done();
+        });
+      });
+    });
+  });
+
   it('should retrieve a value for a given key if options provided', (done) => {
     const value = 'bar';
     redisCache.set('foo', value, () => {
