@@ -20,7 +20,7 @@ const redisStore = (...args) => {
 
   let self = {
     name: 'redis',
-    isCacheableValue: storeArgs.isCacheableValue || (value => value !== undefined && value !== null),
+    isCacheableValue: storeArgs && storeArgs.isCacheableValue || (value => value !== undefined && value !== null),
   };
 
   self.getClient = () => redisCache;
