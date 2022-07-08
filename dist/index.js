@@ -1,123 +1,99 @@
-'use strict';
+import Redis from 'ioredis';
 
-const Redis = require('ioredis');
-
-const redisStore = (...args) => {
-  let redisCache = null;
-
-  if (args.length > 0 && args[0].redisInstance) {
-    redisCache = args[0].redisInstance;
-  } else if (args.length > 0 && args[0].clusterConfig) {
-    const {
-      nodes,
-      options
-    } = args[0].clusterConfig;
-
-    redisCache = new Redis.Cluster(nodes, options || {});
-  } else {
-    redisCache = new Redis(...args);
-  }
-
-  const storeArgs = redisCache.options;
-
-  let self = {
-    name: 'redis',
-    isCacheableValue: storeArgs.isCacheableValue || (value => value !== undefined && value !== null),
-  };
-
-  self.getClient = () => redisCache;
-
-  self.set = (key, value, options, cb) => (
-    new Promise((resolve, reject) => {
-      if (typeof options === 'function') {
-        cb = options;
-        options = {};
-      }
-      options = options || {};
-
-      if (!cb) {
-        cb = (err, result) => (err ? reject(err) : resolve(result));
-      }
-
-      if (!self.isCacheableValue(value)) {
-        return cb(new Error(`"${value}" is not a cacheable value`));
-      }
-
-      const ttl = (options.ttl || options.ttl === 0) ? options.ttl : storeArgs.ttl;
-      const val = JSON.stringify(value) || '"undefined"';
-
-      if (ttl) {
-        redisCache.setex(key, ttl, val, handleResponse(cb));
-      } else {
-        redisCache.set(key, val, handleResponse(cb));
-      }
-    })
-  );
-
-  self.get = (key, options, cb) => (
-    new Promise((resolve, reject) => {
-      if (typeof options === 'function') {
-        cb = options;
-      }
-
-      if (!cb) {
-        cb = (err, result) => (err ? reject(err) : resolve(result));
-      }
-
-      redisCache.get(key, handleResponse(cb, { parse: true }));
-    })
-  );
-  
-  self.del = (key, options, cb) => {
-    if (typeof options === 'function') {
-      cb = options;
+class RedisStore {
+    constructor(...args) {
+        this.name = "redis";
+        if (args.length > 0 && args[0].redisInstance) {
+            this.redisCache = args[0].redisInstance;
+        }
+        else if (args.length > 0 && args[0].clusterConfig) {
+            const { nodes, options } = args[0].clusterConfig;
+            this.redisCache = new Redis.Cluster(nodes, options || {});
+        }
+        else {
+            this.redisCache = new Redis(...args);
+        }
+        this.storeArgs = this.redisCache.options;
+        this.isCacheableValue = this.storeArgs.isCacheableValue || ((value) => value !== undefined && value !== null);
     }
-
-    redisCache.del(key, handleResponse(cb));
-  };
-
-  self.reset = cb => redisCache.flushdb(handleResponse(cb));
-    
-  self.keys = (pattern, cb) => (
-    new Promise((resolve, reject) => {
-      if (typeof pattern === 'function') {
-        cb = pattern;
-        pattern = '*';
-      }
-
-      if (!cb) {
-        cb = (err, result) => (err ? reject(err) : resolve(result));
-      }
-
-      redisCache.keys(pattern, handleResponse(cb));
-    })
-  );
-
-  self.ttl = (key, cb) => redisCache.ttl(key, handleResponse(cb));
-
-  return self;
-};
-  
-function handleResponse(cb, opts = {}) {
-  return (err, result) => {
-    if (err) {
-      return cb && cb(err);
+    getClient() {
+        return this.redisCache;
     }
-
-    if (opts.parse) {
-      try {
-        result = JSON.parse(result);
-      } catch (e) {
-        return cb && cb(e);
-      }
+    set(key, value, options, cb) {
+        return new Promise((resolve, reject) => {
+            if (typeof options === "function") {
+                cb = options;
+                options = {};
+            }
+            options = options || {};
+            if (!cb) {
+                cb = (err, result) => (err ? reject(err) : resolve(result));
+            }
+            if (!this.isCacheableValue(value)) {
+                return cb(new Error(`"${value}" is not a cacheable value`));
+            }
+            const ttl = options.ttl || options.ttl === 0 ? options.ttl : this.storeArgs.ttl;
+            const val = JSON.stringify(value) || '"undefined"';
+            if (ttl) {
+                this.redisCache.setex(key, ttl, val, handleResponse(cb));
+            }
+            else {
+                this.redisCache.set(key, val, handleResponse(cb));
+            }
+        });
     }
-
-    return cb && cb(null, result);
-  };
+    get(key, options, cb) {
+        return new Promise((resolve, reject) => {
+            if (typeof options === "function") {
+                cb = options;
+            }
+            if (!cb) {
+                cb = (err, result) => (err ? reject(err) : resolve(result));
+            }
+            this.redisCache.get(key, handleResponse(cb, { parse: true }));
+        });
+    }
+    del(key, options, cb) {
+        if (typeof options === "function") {
+            cb = options;
+        }
+        return this.redisCache.del(key, handleResponse(cb));
+    }
+    reset(cb) {
+        return this.redisCache.flushdb(handleResponse(cb));
+    }
+    keys(pattern, cb) {
+        return new Promise((resolve, reject) => {
+            if (typeof pattern === "function") {
+                cb = pattern;
+                pattern = "*";
+            }
+            if (!cb) {
+                cb = (err, result) => (err ? reject(err) : resolve(result));
+            }
+            this.redisCache.keys(pattern, handleResponse(cb));
+        });
+    }
+    ttl(key, cb) {
+        return this.redisCache.ttl(key, handleResponse(cb));
+    }
 }
+function handleResponse(cb, opts = {}) {
+    return (err, result) => {
+        if (err) {
+            return cb && cb(err);
+        }
+        if (opts.parse) {
+            try {
+                result = JSON.parse(result);
+            }
+            catch (e) {
+                return cb && cb(e);
+            }
+        }
+        return cb && cb(null, result);
+    };
+}
+var index = { create: (...args) => new RedisStore(...args) };
 
-const methods = {
-  create: (...args) => redisStore(...args),
-};
-
-module.exports = methods;
+export { RedisStore, index as default };

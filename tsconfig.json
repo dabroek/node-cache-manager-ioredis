@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "ES2021",
+    "declaration": true,
+    "outDir": "dist",
+    "declarationMap": true,
+    "allowSyntheticDefaultImports": true
+  }
+}
