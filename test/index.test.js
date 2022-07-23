@@ -132,6 +132,28 @@ describe('set', () => {
     });
   });
 
+  it('should respect the ttl option when supplied an external redis instance', (done) => {
+    const externalRedisInstanceCache = cacheManager.caching({
+      store: redisStore,
+      redisInstance: new Redis({
+        host: config.host,
+        port: config.port,
+        password: config.password,
+        db: config.db,
+      }),
+      ttl: 123
+    });
+
+    externalRedisInstanceCache.set('foo', 'bar', (err) => {
+      expect(err).toEqual(null);
+      redisCache.ttl('foo', (err, ttl) => {
+        expect(err).toEqual(null);
+        expect(ttl).toEqual(123);
+        done();
+      });
+    });
+  });
+
   it('should not be able to store a null value (not cacheable)', (done) => {
     redisCache.set('foo2', null, (err) => {
       if (err) {
